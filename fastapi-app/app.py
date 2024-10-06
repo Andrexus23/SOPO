@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Depends
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -35,7 +36,13 @@ def get_timestamp(
     session = Depends(get_db),
 ):
     with session.begin():
-        return session.scalar(select(Timestamp).where(Timestamp.id == t_id)).first()
+        row = session.execute(select(Timestamp).where(Timestamp.id == t_id)).first()
+        if not row:
+            raise HTTPException(status_code=404, detail="Item not found")
+        return {
+            'id': row[0].id,
+            'timestamp': row[0].timestamp,
+        }
     
 
 @app.post(
@@ -43,11 +50,10 @@ def get_timestamp(
     tags=['Запись в БД'],
 )
 def post_timestamp(
-    item: Item,
     session = Depends(get_db),
 ):
     with session.begin():
-        obj = Timestamp(timestamp=item.timestamp)
+        obj = Timestamp(timestamp=datetime.now())
         session.add(obj)
         session.flush()
         return obj.id
