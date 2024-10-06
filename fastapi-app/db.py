@@ -18,5 +18,12 @@ class Timestamp(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     timestamp: Mapped[int] = mapped_column(DateTime)
 
-engine: Engine = create_engine('')
-Session = sessionmaker(engine)
+engine: Engine = create_engine('mysql+pymysql://root:password@mysql.loykonen-matveev.svc.cluster.local:3306/loykonen_matveev')
+SessionGenerator = sessionmaker(engine)
+
+async def get_db():
+    db = SessionGenerator()
+    try:
+        yield db
+    finally:
+        db.close()

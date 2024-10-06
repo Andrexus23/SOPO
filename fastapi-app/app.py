@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
-from db import Session, Timestamp, Session
+from sqlalchemy.orm import Session
+from db import Timestamp, get_db
 from pydantic import BaseModel
 from datetime import datetime
 import uvicorn
@@ -30,9 +31,10 @@ class Item(BaseModel):
     tags=['Получить запись из БД'],
 )
 def get_timestamp(
-    t_id: int
+    t_id: int,
+    session = Depends(get_db),
 ):
-    with Session as session, session.begin():
+    with session.begin():
         return session.scalar(select(Timestamp).where(Timestamp.id == t_id)).first()
     
 
@@ -41,9 +43,10 @@ def get_timestamp(
     tags=['Запись в БД'],
 )
 def post_timestamp(
-    item: Item
+    item: Item,
+    session = Depends(get_db),
 ):
-    with Session as session, session.begin():
+    with session.begin():
         obj = Timestamp(timestamp=item.timestamp)
         session.add(obj)
         session.flush()
@@ -51,6 +54,6 @@ def post_timestamp(
     
 if __name__ == '__main__':
     uvicorn.run(
-        'fastapi-app.app:app',
+        'app:app',
         reload=True,
     )
