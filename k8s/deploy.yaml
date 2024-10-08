@@ -21,7 +21,7 @@ spec:
       containers:
       - name: fastapi-app
         image: anmatveev9303/fastapi-app:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
           name: fastapi
@@ -40,7 +40,7 @@ spec:
   clusterIP: None
 ---
 apiVersion: apps/v1
-kind: StatefulSet # Заменить на StatefulSet
+kind: StatefulSet
 metadata:
   name: mysql
   namespace: loykonen-matveev
@@ -63,39 +63,46 @@ spec:
         ports:
         - containerPort: 3306
           name: mysql
-# ---
-# apiVersion: storage.k8s.io/v1
-# kind: StorageClass
-# metadata:
-#   name: local-storage-loykonen-matveev
-#   namespace: loykonen-matveev
-# provisioner: kubernetes.io/no-provisioner
-# volumeBindingMode: WaitForFirstConsumer
-# ---
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: mysql-pv
-#   namespace: loykonen-matveev
-#   labels:
-#     type: local
-# spec:
-#   storageClassName: local-storage-loykonen-matveev
-#   capacity:
-#     storage: 1Gi
-#   accessModes:
-#     - ReadWriteOnce
-#   hostPath:
-#     path: "/var/lib/mysql"
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: mysql-pv-claim
-# spec:
-#   storageClassName: local-storage-loykonen-matveev
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 1Gi
+        volumeMounts:
+        - name: local-storage-loykonen-matveev
+          mountPath: /mnt/local-storage-loykonen-matveev
+      volumes:
+        - name: local-storage-loykonen-matveev
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage-loykonen-matveev
+  namespace: loykonen-matveev
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+  namespace: loykonen-matveev
+  labels:
+    type: local
+spec:
+  storageClassName: local-storage-loykonen-matveev
+  capacity:
+    storage: 500Mi
+  accessModes:
+    - ReadWriteOnce
+  local:
+    path: /mnt/local-storage-loykonen-matveev
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  storageClassName: local-storage-loykonen-matveev
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
