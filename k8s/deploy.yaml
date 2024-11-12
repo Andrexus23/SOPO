@@ -64,46 +64,14 @@ spec:
         - containerPort: 3306
           name: mysql
         volumeMounts:
-        - name: local-storage-loykonen-matveev
+        - name: mysql-data
           mountPath: /var/lib/mysql
-      volumes:
-        - name: local-storage-loykonen-matveev
-          persistentVolumeClaim:
-            claimName: mysql-pvc
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: local-storage-loykonen-matveev
-  namespace: loykonen-matveev
-provisioner: kubernetes.io/no-provisioner
-volumeBindingMode: WaitForFirstConsumer
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: mysql-pv
-  namespace: loykonen-matveev
-  labels:
-    type: local
-spec:
-  storageClassName: local-storage-loykonen-matveev
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: /mnt/local-storage-loykonen-matveev
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pvc
-  namespace: loykonen-matveev
-spec:
-  storageClassName: local-storage-loykonen-matveev
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "local-path"
+      resources:
+        requests:
+          storage: 1Gi

@@ -12,6 +12,6 @@
 
 ```kubectl get pod -n loykonen-matveev```
 
-```kubectl exec --stdin -n loykonen-matveev --tty имя_пода_mysql -- /bin/bash```
+```kubectl exec -it -n loykonen-matveev mysql-0 -- /bin/bash```
 
 ```mysql -p```
