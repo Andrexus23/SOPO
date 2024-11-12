@@ -15,3 +15,7 @@
 ```kubectl exec -it -n loykonen-matveev mysql-0 -- /bin/bash```
 
 ```mysql -p```
+
+```kubectl -n loykonen-matveev port-forward <сервер> 8000:8000 ```
+
+```kubectl -n loykonen-matveev delete pod mysql-0 ```
